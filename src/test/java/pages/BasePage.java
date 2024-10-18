@@ -15,7 +15,7 @@ public class BasePage {
     }
 
     public void writeOnElement(By locator, String text){
-        getElement(locator).sendKeys();
+        getElement(locator).sendKeys(text);
     }
 
     public String getLoadedPageUrl(){
@@ -24,5 +24,19 @@ public class BasePage {
 
     public String getLoadedPageTitle(){
         return getDriver().getTitle();
+    }
+
+
+    public void loadAWebPage(String url){
+        getDriver().get(url);
+    }
+
+    public Boolean is_element_visible(By locator){
+        try {
+            return getElement(locator).isDisplayed();
+        }catch (Exception e){
+            return false;
+        }
+
     }
 }
