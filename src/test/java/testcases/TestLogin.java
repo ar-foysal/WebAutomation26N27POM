@@ -1,10 +1,15 @@
 package testcases;
 
+import io.qameta.allure.Allure;
+import io.qameta.allure.Description;
+import io.qameta.allure.Severity;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import pages.HomePage;
 import pages.LoginPage;
+import utilities.DataSet;
 import utilities.DriverSetup;
 
 public class TestLogin extends DriverSetup {
@@ -16,9 +21,15 @@ public class TestLogin extends DriverSetup {
     public void loadTestPage(){
         loginPage.navigateToLoginPage();
     }
+    @AfterMethod
+    public void addScreenshotAfterTest(){
+        homePage.addScreenshot();
+    }
 
-    @Test
+    @Test(description = "Test with valid credentials")
+    @Description("User is trying to Login with valid credentials")
     public void testLoginWithValidCredentials(){
+        Allure.label("severity", "critical");
         loginPage.writeOnElement(loginPage.email_input_box, "fameloh253@chysir.com");
         loginPage.writeOnElement(loginPage.password_input_box, "Pass&Pass!");
         loginPage.clickOnElement(loginPage.login_btn);
@@ -71,11 +82,17 @@ public class TestLogin extends DriverSetup {
         Assert.assertTrue(loginPage.is_element_visible(loginPage.login_btn));
     }
 
-    Object[][] data = {
-            {"fameloh253@chysir.com", "Pass&Pas", "Your email or password is incorrect!", ""},
-            {"fameloh253@chys.com", "Pass&Pas", "Your email or password is incorrect!", ""},
-            {"fameloh253@chys.com", "Pass&Pass!", "Your email or password is incorrect!", ""},
-            {"", "", "", "Please fill out this field."},
-            {"fameloh253@chysir.com", "", "","Your email or password is incorrect!"}
-    };
+
+    @Test(dataProvider = "invalidCredentials", dataProviderClass = DataSet.class)
+    public void testLoginWithInvalidCredentials(String email, String password, String error_msg, String validation_msg){
+        loginPage.writeOnElement(loginPage.email_input_box, email);
+        loginPage.writeOnElement(loginPage.password_input_box, password);
+        loginPage.clickOnElement(loginPage.login_btn);
+        Assert.assertEquals(loginPage.getElement(loginPage.email_input_box).getAttribute("validationMessage"), validation_msg);
+        Assert.assertEquals(loginPage.getElement(loginPage.password_input_box).getAttribute("validationMessage"), validation_msg);
+        if (loginPage.is_element_visible(loginPage.error_msg))
+            Assert.assertEquals(loginPage.getElement(loginPage.error_msg).getText(), error_msg);
+        Assert.assertTrue(loginPage.is_element_visible(loginPage.login_btn));
+    }
+
 }
